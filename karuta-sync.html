@@ -43,7 +43,18 @@
         }
         #controls {
             text-align: center;
+            margin-bottom: 10px;
+        }
+        #delay-control {
+            text-align: center;
             margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        #delay-control input[type="range"] {
+            width: 200px;
         }
         button {
             font-size: 1.1em;
@@ -91,7 +102,7 @@
 </head>
 <body>
 
-    <h1>競技かるた 第72期名人位・第70期クイーン位 決定戦 同期再生 v1.2</h1>
+    <h1>競技かるた 第72期名人位・第70期クイーン位 決定戦 同期再生 v1.3</h1>
 
     <div id="players-container">
         <div class="player-wrapper">
@@ -108,9 +119,15 @@
         <button id="reload-button">再読み込み</button>
     </div>
 
+    <div id="delay-control">
+        <label for="delay-slider">2番目の動画の遅れ設定: <span id="delay-value">0</span> 秒</label>
+        <input type="range" id="delay-slider" min="0" max="10" value="0" step="1">
+    </div>
+
     <footer>
         <p>「同期して再生」で再生開始。同期がずれてきたら「再読み込み」を押して、「同期して再生」を押してください。</p>
-        <p>Mac/AndroidのChorome、iOSのChrome/Safariで動作確認しています。本日試合開始されてから作り始めたので、不具合ご容赦ください🙏</p>
+        <p>片方の動画を少し遅らせて両方観たい人はスライドバーで調整してください。</p>
+        <p>AndroidのChorome、Mac/iOSのChrome/Safariで動作確認しています。本日試合開始されてから作り始めたので、不具合ご容赦ください🙏</p>
         <p style="margin-top: 10px;">
             <a href="https://www.unryu.org/" target="_blank" rel="noopener noreferrer">
                 by Kazutaka Kurihara, Tsuda University
@@ -153,7 +170,6 @@
             checkPlayersReady();
         }
         
-        // Enable the play button when both players are ready
         function checkPlayersReady() {
             if (player1Ready && player2Ready) {
                 const playButton = document.getElementById('play-button');
@@ -164,9 +180,14 @@
 
         function startPlayback() {
              if (player1Ready && player2Ready) {
+                const delaySeconds = parseInt(document.getElementById('delay-slider').value, 10);
+                
                 player1.playVideo();
-                player2.playVideo();
                 player1.unMute();
+
+                setTimeout(function() {
+                    player2.playVideo();
+                }, delaySeconds * 1000);
             }
         }
 
@@ -188,6 +209,13 @@
         // Reload button listener
         document.getElementById('reload-button').addEventListener('click', function() {
             location.reload();
+        });
+
+        // Slider listener
+        const delaySlider = document.getElementById('delay-slider');
+        const delayValueSpan = document.getElementById('delay-value');
+        delaySlider.addEventListener('input', function() {
+            delayValueSpan.textContent = this.value;
         });
     </script>
 
