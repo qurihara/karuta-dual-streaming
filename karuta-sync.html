@@ -91,7 +91,7 @@
 </head>
 <body>
 
-    <h1>競技かるた 第72期名人位・第70期クイーン位 決定戦 同期再生 v0.6</h1>
+    <h1>競技かるた 第72期名人位・第70期クイーン位 決定戦 同期再生 v1.0</h1>
 
     <div id="players-container">
         <div class="player-wrapper">
@@ -103,13 +103,14 @@
     </div>
 
     <div id="controls">
-        <button id="resync-button">同期して再生</button>
+        <button id="play-button" disabled>準備中...</button>
         <button id="pause-button">一時停止</button>
+        <button id="reload-button">再読み込み＆再生</button>
     </div>
 
     <footer>
-        <p>映像がずれて来たら「同期して再生」を再度押してください。</p>
-        <p>MacのChoromeとSafari、AndroidのChromeで動作確認しています。</p>
+        <p>「同期して再生」で再生開始。「再読み込み＆再生」で同期をリセットします。</p>
+        <p>Mac/Win/AndroidのChorome/Safari、iOSのSafariで動作確認しています。</p>
         <p style="margin-top: 10px;">
             <a href="https://www.unryu.org/" target="_blank" rel="noopener noreferrer">
                 by Kazutaka Kurihara, Tsuda University
@@ -130,42 +131,60 @@
         function onYouTubeIframeAPIReady() {
             player1 = new YT.Player('player1', {
                 videoId: 'nfNR2DO8_4E',
-                playerVars: { 'playsinline': 1, 'autoplay': 1, 'mute': 1 },
+                playerVars: { 'playsinline': 1, 'mute': 1 }, // NO autoplay
                 events: { 'onReady': onPlayer1Ready }
             });
 
             player2 = new YT.Player('player2', {
                 videoId: 'NFZXoLd8byM',
-                playerVars: { 'playsinline': 1, 'autoplay': 1, 'mute': 1 },
+                playerVars: { 'playsinline': 1, 'mute': 1 }, // NO autoplay
                 events: { 'onReady': onPlayer2Ready }
             });
         }
 
         function onPlayer1Ready(event) {
             player1Ready = true;
-            checkAndPlay();
+            checkPlayersReady();
         }
 
         function onPlayer2Ready(event) {
             event.target.mute();
             player2Ready = true;
-            checkAndPlay();
+            checkPlayersReady();
         }
         
-        function checkAndPlay() {
+        function checkPlayersReady() {
             if (player1Ready && player2Ready) {
-                // First, ensure both videos are playing (they should be already, but this is safe)
+                const playButton = document.getElementById('play-button');
+                // First, set the button's final text label.
+                playButton.textContent = '同期して再生';
+
+                // Now, check if we should autoplay from a reload
+                if (sessionStorage.getItem('autoplayOnReload') === 'true') {
+                    sessionStorage.removeItem('autoplayOnReload'); // Consume the flag
+                    startPlayback();
+                    playButton.disabled = true; // Disable the button, it will now correctly say "同期して再生"
+                } else {
+                    // Otherwise, just enable the main play button for manual start
+                    playButton.disabled = false;
+                }
+            }
+        }
+
+        function startPlayback() {
+             if (player1Ready && player2Ready) {
                 player1.playVideo();
                 player2.playVideo();
-                // Then, attempt to unmute the first player.
                 player1.unMute();
             }
         }
 
-        document.getElementById('resync-button').addEventListener('click', function() {
-            location.reload();
+        // Main play button listener
+        document.getElementById('play-button').addEventListener('click', function() {
+            startPlayback();
         });
 
+        // Pause button listener
         document.getElementById('pause-button').addEventListener('click', function() {
             if (player1 && player1.pauseVideo) {
                 player1.pauseVideo();
@@ -173,6 +192,12 @@
             if (player2 && player2.pauseVideo) {
                 player2.pauseVideo();
             }
+        });
+
+        // Reload button listener
+        document.getElementById('reload-button').addEventListener('click', function() {
+            sessionStorage.setItem('autoplayOnReload', 'true');
+            location.reload();
         });
     </script>
 
