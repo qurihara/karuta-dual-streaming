@@ -91,7 +91,7 @@
 </head>
 <body>
 
-    <h1>競技かるた 第72期名人位・第70期クイーン位 決定戦 同期再生 同期再生</h1>
+    <h1>競技かるた 第72期名人位・第70期クイーン位 決定戦 同期再生 v0.3</h1>
 
     <div id="players-container">
         <div class="player-wrapper">
@@ -153,9 +153,11 @@
         
         function checkAndPlay() {
             if (player1Ready && player2Ready) {
-                player1.unMute();
+                // First, ensure both videos are playing (they should be already, but this is safe)
                 player1.playVideo();
                 player2.playVideo();
+                // Then, attempt to unmute the first player.
+                player1.unMute();
             }
         }
 
