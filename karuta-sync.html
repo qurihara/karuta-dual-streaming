@@ -1,30 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>かるた大会 同期再生</title>
+    <title>競技かるた 第72期名人位・第70期クイーン位 決定戦 同期再生</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             font-family: sans-serif;
             background-color: #f0f0f0;
             color: #333;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         h1 {
             text-align: center;
             margin-bottom: 20px;
+            font-size: 1.5em;
         }
         #players-container {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 10px;
             margin-bottom: 20px;
+            width: 100%;
         }
         .player-wrapper {
             position: relative;
-            width: 48%;
-            padding-top: 27%; /* 16:9 Aspect Ratio */
+            width: 49%;
+            padding-top: 27.5%; /* 16:9 Aspect Ratio for 49% width */
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: #000;
         }
         .player-wrapper iframe {
             position: absolute;
@@ -36,10 +43,11 @@
         }
         #controls {
             text-align: center;
+            margin-bottom: 15px;
         }
         button {
-            font-size: 1.2em;
-            padding: 10px 20px;
+            font-size: 1.1em;
+            padding: 8px 16px;
             cursor: pointer;
             border: none;
             background-color: #007bff;
@@ -51,15 +59,39 @@
         button:hover {
             background-color: #0056b3;
         }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
+        footer {
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        /* Responsive Design for smartphones */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+            h1 {
+                font-size: 1.2em;
+            }
+            #players-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            .player-wrapper {
+                width: 98%;
+                padding-top: 55.125%; /* 16:9 Aspect Ratio for 98% width */
+            }
+            button {
+                font-size: 1em;
+                padding: 10px 20px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <h1>かるた大会 同期再生</h1>
+    <h1>競技かるた 第72期名人位・第70期クイーン位 決定戦 同期再生 同期再生</h1>
 
     <div id="players-container">
         <div class="player-wrapper">
@@ -71,14 +103,20 @@
     </div>
 
     <div id="controls">
-        <button id="play-button" disabled>準備中...</button>
+        <button id="resync-button">同期して再生</button>
         <button id="pause-button">一時停止</button>
-        <button id="stop-button">停止</button>
-        <button id="resync-button">再同期して再生</button>
     </div>
 
+    <footer>
+        <p>映像がずれて来たら「同期して再生」を再度押してください。</p>
+        <p style="margin-top: 10px;">
+            <a href="https://www.unryu.org/" target="_blank" rel="noopener noreferrer">
+                by Kazutaka Kurihara, Tsuda University
+            </a>
+        </p>
+    </footer>
+
     <script>
-        // 1. YouTube IFrame Player APIの非同期読み込み
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -88,80 +126,53 @@
         var player1Ready = false;
         var player2Ready = false;
 
-        // 2. APIコードがダウンロードされた後にこの関数が呼び出される
         function onYouTubeIframeAPIReady() {
             player1 = new YT.Player('player1', {
                 videoId: 'nfNR2DO8_4E',
-                playerVars: {
-                    'playsinline': 1
-                },
-                events: {
-                    'onReady': onPlayer1Ready,
-                }
+                playerVars: { 'playsinline': 1, 'autoplay': 1, 'mute': 1 },
+                events: { 'onReady': onPlayer1Ready }
             });
 
             player2 = new YT.Player('player2', {
                 videoId: 'NFZXoLd8byM',
-                playerVars: {
-                    'playsinline': 1
-                },
-                events: {
-                    'onReady': onPlayer2Ready,
-                }
+                playerVars: { 'playsinline': 1, 'autoplay': 1, 'mute': 1 },
+                events: { 'onReady': onPlayer2Ready }
             });
         }
 
-        // 3. 各プレーヤーの準備ができたら呼び出される
         function onPlayer1Ready(event) {
             player1Ready = true;
-            checkPlayersReady();
+            checkAndPlay();
         }
+
         function onPlayer2Ready(event) {
-            event.target.mute(); // 右側の動画をミュート
+            event.target.mute();
             player2Ready = true;
-            checkPlayersReady();
+            checkAndPlay();
         }
         
-        // 4. 両方のプレーヤーの準備ができているか確認
-        function checkPlayersReady() {
+        function checkAndPlay() {
             if (player1Ready && player2Ready) {
-                var playButton = document.getElementById('play-button');
-                playButton.disabled = false;
-                playButton.textContent = '再生開始';
-
-                // 再同期ボタンによってリロードされたか確認
-                if (sessionStorage.getItem('autoplayOnLoad') === 'true') {
-                    sessionStorage.removeItem('autoplayOnLoad'); // フラグを消費
-                    player1.playVideo();
-                    player2.playVideo();
-                }
+                player1.unMute();
+                player1.playVideo();
+                player2.playVideo();
             }
         }
 
-        // 5. ボタンのイベントリスナー
-        document.getElementById('play-button').addEventListener('click', function() {
-            player1.playVideo();
-            player2.playVideo();
-        });
-
-        document.getElementById('pause-button').addEventListener('click', function() {
-            player1.pauseVideo();
-            player2.pauseVideo();
-        });
-
-        document.getElementById('stop-button').addEventListener('click', function() {
-            player1.stopVideo();
-            player2.stopVideo();
-        });
-
         document.getElementById('resync-button').addEventListener('click', function() {
-            // 自動再生のためのフラグを立ててリロード
-            sessionStorage.setItem('autoplayOnLoad', 'true');
-
             location.reload();
         });
 
+        document.getElementById('pause-button').addEventListener('click', function() {
+            if (player1 && player1.pauseVideo) {
+                player1.pauseVideo();
+            }
+            if (player2 && player2.pauseVideo) {
+                player2.pauseVideo();
+            }
+        });
     </script>
 
 </body>
 </html>
+ぺー
